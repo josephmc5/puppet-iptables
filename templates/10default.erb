@@ -1,0 +1,37 @@
+*filter
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT DROP [0:0]
+:ICMP - [0:0]
+:LOGGING - [0:0]
+:LOCAL-INPUT - [0:0]
+:LOCAL-OUTPUT - [0:0]
+
+# INPUT
+-A INPUT -i lo -j ACCEPT
+-A INPUT -i eth1 -j ACCEPT
+-A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+-A INPUT -p icmp -j ICMP
+<% if @jump_server %>
+-A INPUT -p tcp -m tcp --dport 22 -s <%= jump_server %> -j ACCEPT -m comment --comment "Jump Server" 
+<% else %>
+A INPUT -p tcp --dport 22 -m state --state NEW -m recent --set
+-A INPUT -p tcp --dport 22 -m state --state NEW -m recent --update --seconds 360 --hitcount 6 -j DROP
+A INPUT -p tcp -m tcp --dport 22 -s <%= mon_host %> -j ACCEPT -m comment --comment "Monitoring"
+<% end %>
+# OUTPUT
+-A OUTPUT -o lo -j ACCEPT
+-A OUTPUT -o eth1 -j ACCEPT
+-A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+-A OUTPUT -p icmp -j ICMP
+-A OUTPUT -p udp -m udp --dport 53 -j ACCEPT
+-A OUTPUT -p tcp -m tcp --dport 80 -j ACCEPT
+-A OUTPUT -p tcp -m tcp --dport 443 -j ACCEPT
+
+# ICMP
+-A ICMP -p icmp -m icmp --icmp-type 0 -j ACCEPT 
+-A ICMP -p icmp -m icmp --icmp-type 8 -j ACCEPT 
+-A ICMP -p icmp -m icmp --icmp-type 3 -j ACCEPT 
+-A ICMP -p icmp -m icmp --icmp-type 11 -j ACCEPT
+
+COMMIT

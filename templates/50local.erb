@@ -1,0 +1,18 @@
+*filter
+-A INPUT -j LOCAL-INPUT
+-A OUTPUT -j LOCAL-OUTPUT
+
+-A LOCAL-OUTPUT -p tcp -m tcp --dport 11371 -m comment --comment "GPG keyserver port" -j ACCEPT
+% if role == "puppet-master" %>
+<% end %>
+<% if role == "web" %>
+<% end %>
+<% if role == "reporting" %>
+<% end %>
+<% if role == "services" %>
+<% end %>
+<% if role == "db" %>
+<% end %>
+-A LOCAL-OUTPUT -j RETURN
+-A LOCAL-INPUT -j  RETURN
+COMMIT

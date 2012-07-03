@@ -1,0 +1,6 @@
+*filter
+-A INPUT -j LOGGING
+-A OUTPUT -j LOGGING
+-A LOGGING -m limit --limit 5/min -j LOG --log-prefix "iptables denied: " --log-level 7
+-A LOGGING -j RETURN
+COMMIT
